@@ -6,7 +6,7 @@ Express 5 / Node.js 24 JavaScript API, PostgreSQL, and a minimal responsive Java
 
 ## Run locally
 
-Requirements: Node.js 24, npm, PostgreSQL 18 (local, Docker, or managed).
+Requirements: Node.js 24, npm, PostgreSQL 18
 
 1. Start local PostgreSQL with `docker compose up -d database`, or provision a separate database.
 2. Copy `api/.env.example` to `api/.env`. Set DATABASE_URL and WEB_ORIGIN. The example frontend origin is `http://127.0.0.1:3000`.

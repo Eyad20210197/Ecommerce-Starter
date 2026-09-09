@@ -1,0 +1,32 @@
+{
+  "name": "@softwareguys/api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "dev": "node --watch --env-file-if-exists=.env src/server.js",
+    "start": "node --env-file-if-exists=.env src/server.js",
+    "test": "node --test src/app.test.js test/unit.test.js",
+    "test:integration": "node --env-file-if-exists=.env --test --test-concurrency=1 test/integration.test.js",
+    "check": "node scripts/check.js",
+    "build": "npm run check",
+    "db:migrate": "node --env-file-if-exists=.env src/infrastructure/database/migrate.js",
+    "db:seed": "node --env-file-if-exists=.env scripts/seed.js",
+    "owner:create": "node --env-file-if-exists=.env scripts/create-owner.js",
+    "owner:reset-password": "node --env-file-if-exists=.env scripts/reset-owner-password.js",
+    "maintenance": "node --env-file-if-exists=.env scripts/maintenance.js"
+  },
+  "dependencies": {
+    "cors": "2.8.6",
+    "express": "5.2.1",
+    "helmet": "8.3.0",
+    "pg": "8.23.0",
+    "pg-hstore": "2.3.4",
+    "sequelize": "6.37.8",
+    "umzug": "3.8.3",
+    "zod": "4.5.4"
+  }
+}

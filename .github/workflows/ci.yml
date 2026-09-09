@@ -1,0 +1,35 @@
+name: Verify
+on: [push, pull_request]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18.4-bookworm
+        env:
+          POSTGRES_DB: commerce_test
+          POSTGRES_USER: store
+          POSTGRES_PASSWORD: ci-only-password
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U store -d commerce_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24.15.0"
+          cache: npm
+          cache-dependency-path: |
+            api/package-lock.json
+            web/package-lock.json
+      - run: npm ci --ignore-scripts
+        working-directory: api
+      - run: npm run check && npm test && npm run test:integration
+        working-directory: api
+        env:
+          INTEGRATION_DATABASE_URL: postgres://store:ci-only-password@127.0.0.1:5432/commerce_test
+      - run: npm ci --ignore-scripts && npm run build && npm test
+        working-directory: web
+      - run: docker build -t commerce-api:ci ./api
+

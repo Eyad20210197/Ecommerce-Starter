@@ -4,14 +4,7 @@ import { api, setCsrfToken } from '../lib/api.js';
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    try {
-      const saved = localStorage.getItem('aura_auth_user');
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  });
+  const [user, setUser] = useState(null);
   const [csrfToken, setCsrf] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -19,26 +12,13 @@ export function AuthProvider({ children }) {
     try {
       const result = await api('/auth/session');
       setUser(result.user || null);
-      if (result.user) {
-        localStorage.setItem('aura_auth_user', JSON.stringify(result.user));
-      } else {
-        localStorage.removeItem('aura_auth_user');
-      }
-      setCsrf(result.csrfToken);
-      setCsrfToken(result.csrfToken);
+      setCsrf(result.csrfToken || null);
+      setCsrfToken(result.csrfToken || null);
       return result;
     } catch (err) {
-      console.warn('Session refresh fallback to local cache', err.message);
-      const saved = localStorage.getItem('aura_auth_user');
-      if (saved) {
-        try {
-          setUser(JSON.parse(saved));
-        } catch {
-          setUser(null);
-        }
-      } else {
-        setUser(null);
-      }
+      setUser(null);
+      setCsrf(null);
+      setCsrfToken(null);
     } finally {
       setLoading(false);
     }
@@ -49,41 +29,11 @@ export function AuthProvider({ children }) {
   }, [refreshSession]);
 
   const login = useCallback(async (credentials) => {
-    try {
-      const result = await api('/auth/login', { method: 'POST', body: credentials });
-      setUser(result.user);
-      if (result.user) {
-        localStorage.setItem('aura_auth_user', JSON.stringify(result.user));
-      }
-      setCsrf(result.csrfToken);
-      setCsrfToken(result.csrfToken);
-      return result.user;
-    } catch (err) {
-      // Offline / demo credentials fallback
-      if (credentials.email?.includes('owner') || credentials.email?.includes('admin') || credentials.role === 'owner') {
-        const demoUser = {
-          id: 'demo-owner-1',
-          name: 'Store Manager',
-          email: credentials.email || 'owner@aurastore.com',
-          role: 'owner'
-        };
-        setUser(demoUser);
-        localStorage.setItem('aura_auth_user', JSON.stringify(demoUser));
-        return demoUser;
-      }
-      if (credentials.email?.includes('demo') || credentials.role === 'customer') {
-        const demoCustomer = {
-          id: 'demo-cust-1',
-          name: 'Demo Customer',
-          email: credentials.email || 'shopper@aurastore.com',
-          role: 'customer'
-        };
-        setUser(demoCustomer);
-        localStorage.setItem('aura_auth_user', JSON.stringify(demoCustomer));
-        return demoCustomer;
-      }
-      throw err;
-    }
+    const result = await api('/auth/login', { method: 'POST', body: credentials });
+    setUser(result.user);
+    setCsrf(result.csrfToken);
+    setCsrfToken(result.csrfToken);
+    return result.user;
   }, []);
 
   const register = useCallback(async (data) => {
@@ -98,10 +48,11 @@ export function AuthProvider({ children }) {
     try {
       await api('/auth/logout', { method: 'POST' });
     } catch {
-      // Proceed with local logout regardless of error
+      // Proceed with local state cleanup
     }
-    localStorage.removeItem('aura_auth_user');
     setUser(null);
+    setCsrf(null);
+    setCsrfToken(null);
     await refreshSession();
   }, [refreshSession]);
 

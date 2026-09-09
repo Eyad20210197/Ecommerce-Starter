@@ -5,7 +5,6 @@ import { useToast } from '../context/ToastContext.jsx';
 import { api } from '../lib/api.js';
 import { productName, productDescription } from '../lib/formatters.js';
 import { buildImageUrl } from '../lib/imagekit.js';
-import { starterProducts } from '../config/starterCatalog.js';
 import { EmptyState } from '../components/common/EmptyState.jsx';
 import { ShoppingBag, Check, ArrowLeft, ShieldCheck } from 'lucide-react';
 
@@ -35,13 +34,8 @@ export function ProductDetailPage({ productId, onNavigate }) {
           setSelectedImage(gallery.find(image => image.is_primary)?.url || gallery[0]?.url || null);
         }
       } catch (err) {
-        console.warn('Product fetch notice (using starter catalog):', err.message);
-        const match = starterProducts.find(p => p.id === productId || p.sku === productId) || starterProducts[0];
-        if (active && match) {
-          setProduct(match);
-          setStock(match.available || 0);
-          setSelectedImage(match.image_url);
-        }
+        console.error('Product fetch error from catalog API:', err);
+        if (active) setProduct(null);
       } finally {
         if (active) setLoading(false);
       }

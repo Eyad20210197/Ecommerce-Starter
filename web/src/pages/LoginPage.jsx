@@ -105,34 +105,6 @@ export function LoginPage({ onNavigate }) {
               {t('Create account')}
             </a>
           </p>
-
-          <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px dashed var(--color-border)' }}>
-            <p className="muted-small mb-2" style={{ fontWeight: 600 }}>
-              {t('Quick preview demo:')}
-            </p>
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <button
-                type="button"
-                className="btn btn-secondary btn-small"
-                onClick={async () => {
-                  await login({ email: 'owner@aurastore.com', role: 'owner' });
-                  onNavigate('/manage/settings');
-                }}
-              >
-                {t('Store manager view')}
-              </button>
-              <button
-                type="button"
-                className="btn btn-secondary btn-small"
-                onClick={async () => {
-                  await login({ email: 'shopper@aurastore.com', role: 'customer' });
-                  onNavigate('/account');
-                }}
-              >
-                {t('Customer view')}
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </div>

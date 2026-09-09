@@ -6,7 +6,6 @@ import { Pagination } from '../components/common/Pagination.jsx';
 import { EmptyState } from '../components/common/EmptyState.jsx';
 import { SearchBar } from '../components/common/SearchBar.jsx';
 import { categoryName } from '../lib/formatters.js';
-import { starterProducts, starterCategories } from '../config/starterCatalog.js';
 import { Search, Tag, X, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
 
 export function ShopPage({ searchParams, onNavigate }) {
@@ -125,38 +124,15 @@ export function ShopPage({ searchParams, onNavigate }) {
       });
       setCategories(catRes.categories || []);
     } catch (err) {
-      console.warn('Catalog fetch notice (using starter catalog):', err.message);
-      let fallback = [...starterProducts];
-      const query = new URLSearchParams(searchParams);
-      const qText = (query.get('q') || '').toLowerCase().trim();
-      const qTag = (query.get('tag') || '').toLowerCase().trim();
-      const qCat = query.get('category') || '';
-      const qMin = query.get('min') ? Number(query.get('min')) : null;
-      const qMax = query.get('max') ? Number(query.get('max')) : null;
-      const qAvail = query.get('available') === 'true';
-
-      if (qCat) fallback = fallback.filter(p => p.category_id === qCat);
-      if (qTag) fallback = fallback.filter(p => p.tags.some(t => t.toLowerCase() === qTag));
-      if (qText) fallback = fallback.filter(p => p.name.toLowerCase().includes(qText) || p.description.toLowerCase().includes(qText) || p.tags.some(t => t.toLowerCase().includes(qText)));
-      if (qMin !== null) fallback = fallback.filter(p => p.price_minor >= qMin);
-      if (qMax !== null) fallback = fallback.filter(p => p.price_minor <= qMax);
-      if (qAvail) fallback = fallback.filter(p => p.available > 0);
-
-      const sortMode = query.get('sort') || 'newest';
-      if (sortMode === 'price_asc') fallback.sort((a, b) => a.price_minor - b.price_minor);
-      else if (sortMode === 'price_desc') fallback.sort((a, b) => b.price_minor - a.price_minor);
-      else if (sortMode === 'name') fallback.sort((a, b) => a.name.localeCompare(b.name));
-
-      const allTags = Array.from(new Set(starterProducts.flatMap(p => p.tags)));
-
+      console.error('Failed to load products from catalog API:', err);
       setCatalog({
-        products: fallback,
-        tags: allTags,
-        total: fallback.length,
+        products: [],
+        tags: [],
+        total: 0,
         page: 1,
         limit: 24
       });
-      setCategories(starterCategories);
+      setCategories([]);
     } finally {
       setLoading(false);
     }

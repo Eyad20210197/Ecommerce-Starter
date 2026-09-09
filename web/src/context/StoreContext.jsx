@@ -85,24 +85,16 @@ export function StoreProvider({ children }) {
       if (conf.currency && !localStorage.getItem('currency')) {
         setCurrencyState(conf.currency);
       }
+      if (conf.language && !localStorage.getItem('language')) {
+        setLanguageState(conf.language);
+      }
     } catch (err) {
-      console.warn('Backend store config offline, using local store configuration', err);
-      // Fallback gracefully so the storefront is always fully accessible and interactive
-      setBackendConfig({
-        name: storeConfig.brand.name,
-        email: storeConfig.brand.supportEmail,
-        currency: storeConfig.i18n.defaultCurrency || 'USD',
-        language: storeConfig.i18n.defaultLanguage || 'en',
-        currencies: storeConfig.i18n.defaultRates,
-        languages: ['en', 'ar'],
-        shippingFeeMinor: 0,
-        taxBps: 0,
-        paymentMethods: ['cod']
-      });
+      console.error('Failed to connect to backend store API:', err);
+      setError(err);
     } finally {
       setLoading(false);
     }
-  }, [storeConfig]);
+  }, []);
 
   useEffect(() => {
     loadConfig();
